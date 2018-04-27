@@ -8,8 +8,7 @@ class SysctlProvider(BaseProvider):
     }
     
     def _get_attribute(self, name):
-        self._exec(['sysctl', '-n', name])
-
+        return self._exec(['sysctl', '-n', name])
 
     def cpu_load_average(self):
         average_data = self._get_attribute('vm.loadavg')
