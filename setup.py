@@ -5,9 +5,7 @@ setup(
     version='0.0.0',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        'Click',
-    ],
+    install_requires=[],
     entry_points='''
         [console_scripts]
         cog=coglib.cli:init
