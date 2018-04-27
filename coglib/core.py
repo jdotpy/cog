@@ -48,7 +48,7 @@ class BaseProvider():
 
     def _exec(self, command):
         command_result = subprocess.run(command, stdout=subprocess.PIPE)
-        return command_result.decode('utf-8')
+        return command_result.stdout.decode('utf-8')
 
     def _cat_file(self, location, encoding='utf-8'):
         with open(location, 'r', encoding=encoding) as f:
