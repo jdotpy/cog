@@ -7,7 +7,6 @@ class ProcFileProvider(BaseProvider):
         'cpu.loadAvg': 'cpu_load_average',
     }
     
-
     def cpu_load_average(self, key):
         average_data = self._cat_file('/proc/loadavg')
         averages = average_data.split(' ')[:3]
