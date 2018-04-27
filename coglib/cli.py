@@ -1,25 +1,61 @@
 import argparse
 import sys
 
+from .providers.sysctl import SysctlProvider
 from .plugins.basicLoad import BasicLoadPlugin
+from .core import BaseProvider
+
+from .utils import import_class
+
+class NoPlatformFoundError(ValueError):
+    pass
 
 class CLI():
     name = 'cog'
+
+    PROVIDER_CLASSES = [
+        'coglib.providers.internal.InternalPythonProvider',
+        'coglib.providers.sysctl.SysctlProvider',
+        'coglib.providers.procFiles.ProcFileProvider',
+    ]
     PLUGIN_CLASSES = [
-        BasicLoadPlugin,
+        'coglib.plugins.basicLoad.BasicLoadPlugin',
     ]
 
     def __init__(self):
+        self._platform = BaseProvider.detect_platform()
         self._parser = argparse.ArgumentParser(prog=self.name)
         self._subparsers = self._parser.add_subparsers(dest='cmd')
         self._initialize_plugins();
 
+    def get_data(self, key):
+        sources = self.data_sources.get(key, [])
+        if not sources:
+            raise NoPlatformFoundError()
+
+        source = sources[0]
+        return source.get_data(key)
 
     def _initialize_plugins(self):
         self.plugins = []
+        self.providers = []
+        self.data_sources = {}
 
-        for Plugin in self.PLUGIN_CLASSES:
-            self.plugins.append(Plugin(cli))
+        for path in self.PROVIDER_CLASSES:
+            ProviderClass = import_class(path)
+            provider = ProviderClass(self)
+            if not provider.is_supported(self._platform):
+                continue
+
+            self.providers.append(provider)
+            for key, func_name in provider.data.items():
+                if key not in self.data_sources:
+                    self.data_sources[key] = [provider]
+                else:
+                    self.data_sources[key].append(provider)
+        for path in self.PLUGIN_CLASSES:
+            plugin = import_class(path)(self)
+            self.plugins.append(plugin)
 
         for plugin in self.plugins:
             for command_meta in plugin.commands:

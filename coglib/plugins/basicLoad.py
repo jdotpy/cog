@@ -1,4 +1,5 @@
-import subprocess
+from coglib.core import BasePlugin
+
 from pprint import pprint
 import re
 
@@ -121,30 +122,28 @@ def progress_bar(value, ceiling, markers=None, row_count=50):
             bar = bar[:location] + '|' + bar[location + 1:]
     return '[{}]'.format(bar)
 
-class BasicLoadPlugin():
+class BasicLoadPlugin(BasePlugin):
     commands = [
         {
-            'command': 'top',
-            'func': 'example_command',
-            'args': {
-                '--foo': { 'action': 'store_true', 'help': 'Foobar help!' },
-             },
+            'command': 'load',
+            'func': 'cpu_load',
+            'args': {},
         },
-        {
-            'command': 'net:open',
-            'func': 'listening_ports',
-            'args': {
-                '--foo': { 'action': 'store_true', 'help': 'Foobar help!' },
-             },
-        }
+        #{
+        #    'command': 'net:open',
+        #    'func': 'listening_ports',
+        #    'args': {
+        #        '--foo': { 'action': 'store_true', 'help': 'Foobar help!' },
+        #     },
+        #}
     ]
 
     def __init__(self, cli):
         self.cli = cli
 
-    def example_command(self, args):
-        cpu_count = darwin_cpu_count()
-        averages = darwin_load_average()
+    def cpu_load(self, args):
+        cpu_count = self.get_data('cpu.countLogical')
+        averages = self.get_data('cpu.loadAvg')
         average = averages[0]
         ceiling = max(average, 2 * cpu_count)
         if average > cpu_count:
