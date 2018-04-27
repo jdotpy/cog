@@ -17,13 +17,15 @@ class CLI():
         'coglib.providers.internal.InternalPythonProvider',
         'coglib.providers.sysctl.SysctlProvider',
         'coglib.providers.procFiles.ProcFileProvider',
+        'coglib.providers.lsof.LsofProvider',
     ]
     PLUGIN_CLASSES = [
+        'coglib.plugins.net.NetPlugin',
         'coglib.plugins.basicLoad.BasicLoadPlugin',
     ]
 
     def __init__(self):
-        self._platform = BaseProvider.detect_platform()
+        self.platform = BaseProvider.detect_platform()
         self._parser = argparse.ArgumentParser(prog=self.name)
         self._subparsers = self._parser.add_subparsers(dest='cmd')
         self._initialize_plugins();
@@ -44,7 +46,7 @@ class CLI():
         for path in self.PROVIDER_CLASSES:
             ProviderClass = import_class(path)
             provider = ProviderClass(self)
-            if not provider.is_supported(self._platform):
+            if not provider.is_supported(self.platform):
                 continue
 
             self.providers.append(provider)
